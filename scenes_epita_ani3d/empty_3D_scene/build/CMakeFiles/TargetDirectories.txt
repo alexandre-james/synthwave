@@ -1,0 +1,3 @@
+/mnt/c/Users/teman/tems-ubuntu/ani3d/code_epita_ani3d/scenes_epita_ani3d/empty_3D_scene/build/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/teman/tems-ubuntu/ani3d/code_epita_ani3d/scenes_epita_ani3d/empty_3D_scene/build/CMakeFiles/edit_cache.dir
+/mnt/c/Users/teman/tems-ubuntu/ani3d/code_epita_ani3d/scenes_epita_ani3d/empty_3D_scene/build/CMakeFiles/empty_3D_scene.dir
