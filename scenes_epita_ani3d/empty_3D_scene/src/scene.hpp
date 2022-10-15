@@ -28,11 +28,15 @@ struct scene_structure : cgp::scene_inputs_generic {
 	input_devices inputs;                // Storage for inputs status (mouse, keyboard, window dimension)
 	gui_parameters gui;                  // Standard GUI element storage
 	
+	cgp::timer_basic timer;
+	
 	// ****************************** //
 	// Elements and shapes of the scene
 	// ****************************** //
 
-
+	cgp::mesh shape;
+  	cgp::numarray<cgp::vec3> initial_position;
+  	cgp::mesh_drawable shape_visual;
 
 	// ****************************** //
 	// Functions
@@ -41,13 +45,12 @@ struct scene_structure : cgp::scene_inputs_generic {
 	void initialize();    // Standard initialization to be called before the animation loop
 	void display_frame(); // The frame display to be called within the animation loop
 	void display_gui();   // The display of the GUI, also called within the animation loop
-
+	void evolve_shape(); // Compute the deformation of the surface
 
 	void mouse_move_event();
 	void mouse_click_event();
 	void keyboard_event();
 	void idle_frame();
-
 };
 
 
