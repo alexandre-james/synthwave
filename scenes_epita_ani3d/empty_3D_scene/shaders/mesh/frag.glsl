@@ -122,8 +122,14 @@ void main()
 	float Ka = material.phong.ambient;
 	float Kd = material.phong.diffuse;
 	float Ks = material.phong.specular;
-	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);
-	
-	// Output color, with the alpha component
-	FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
+	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);	
+
+
+    if (int(fragment.position.x * 100) % 100 == 0 || int(fragment.position.y * 100) % 100 == 0 ) {
+        FragColor = vec4(vec3(0, 1.0, 1.0), 1);
+    }
+    else {
+        // Output color, with the alpha component
+        FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
+    }
 }

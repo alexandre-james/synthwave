@@ -25,12 +25,12 @@ void scene_structure::initialize()
 
     environment.background_color = {0, 0, 0};
 
-	int N = 5;
-	shape = mesh_primitive_grid({ 0,0,0 }, { 1,0,0 }, { 1,1,0 }, { 0,1,0 }, N, N);
+	int N = 101;
+	shape = mesh_primitive_grid({ -50,-50,0 }, { 50,-50,0 }, { 50,50,0 }, { -50,50,0 }, N, N);
 	initial_position = shape.position;
 
     opengl_shader_structure shader;
-    shader.load("shaders/single_color/vert.glsl", "shaders/single_color/frag.glsl");
+    shader.load("shaders/mesh/vert.glsl", "shaders/mesh/frag.glsl");
 
 	shape_visual.initialize_data_on_gpu(shape, shader);
 	shape_visual.material.color = { 0.5f, 0.5f, 0.5f };
@@ -59,7 +59,7 @@ void scene_structure::display_frame()
 	evolve_shape();
 	shape_visual.vbo_position.update(shape.position);
 	// Recompute normals on the CPU (given the position and the connectivity currently in the mesh structure)
-	shape.normal_position_update();
+	shape.normal_update();
 	// Send updated normals on the GPU
 	shape_visual.vbo_normal.update(shape.normal);
 }
