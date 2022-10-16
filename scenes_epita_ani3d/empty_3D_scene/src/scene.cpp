@@ -5,14 +5,25 @@ using namespace cgp;
 
 
 void scene_structure::evolve_shape()
-{
+{	
     size_t const N = initial_position.size();
-    for(size_t k=0; k<N; ++k)
+
+	for(float k=0.0f; k<4545.0f; ++k)
     {
+		float persistency = 2.0f + 0.4f * (100.0f - (k * 100.0f / 4545.0f));
         vec3 const& p0 = initial_position[k];
         vec3& p        = shape.position[k];
-		float const dz = 0.3f * noise_perlin({ p0.x + 0.2f * timer.t, p0.y, 0 }, 2)
-						+ 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
+		float const dz = 0.3f * noise_perlin({ p0.x + 0.2f * timer.t, p0.y, 0 }, 2, persistency, 0.3f) 
+			+ 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
+        p.z = dz;
+    }
+	for(float k=5662; k<N; ++k)
+    {
+		float persistency = 2.0f + 0.4f * (((k - 5662) * 100.0f / 4539.0f));
+        vec3 const& p0 = initial_position[k];
+        vec3& p        = shape.position[k];
+		float const dz = 0.3f * noise_perlin({ p0.x + 0.2f * timer.t, p0.y, 0 }, 2, persistency, 0.3f) 
+			+ 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
         p.z = dz;
     }
 }
