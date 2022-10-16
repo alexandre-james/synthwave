@@ -115,8 +115,21 @@ void main()
 	// Compute Shading
 	// *************************************** //
 
-	// Compute the base color of the object based on: vertex color, uniform color, and texture
-	vec3 color_object  = fragment.color * material.color * color_image_texture.rgb;
+	vec3 color_object;
+
+    float dist = distance(camera_position, fragment.position);
+    int sub = int((1 / dist) * 300);
+
+    int x_cond = int(abs(fragment.position.x) * sub) % sub;
+    int y_cond = int(abs(fragment.position.y) * sub) % sub;
+
+    if (x_cond == 0 || x_cond == sub - 1 || y_cond == 0 || y_cond == sub - 1) {
+        color_object = vec3(0, 1.0, 1.0);
+    }
+    else {
+	    // Compute the base color of the object based on: vertex color, uniform color, and texture
+        color_object = fragment.color * material.color * color_image_texture.rgb;
+    }
 
 	// Compute the final shaded color using Phong model
 	float Ka = material.phong.ambient;
@@ -125,11 +138,6 @@ void main()
 	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);	
 
 
-    if (int(fragment.position.x * 100) % 100 == 0 || int(fragment.position.y * 100) % 100 == 0 ) {
-        FragColor = vec4(vec3(0, 1.0, 1.0), 1);
-    }
-    else {
-        // Output color, with the alpha component
-        FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
-    }
+    // Output color, with the alpha component
+    FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
 }
