@@ -25,6 +25,7 @@ namespace cgp
 		mesh& push_back(mesh const& to_add);
 		mesh& flip_connectivity();
 		mesh& normal_update();
+        mesh& normal_position_update();
 	};
 
 	/** Compute automaticaly a per-vertex normal given a set of positions and their connectivity 
@@ -33,6 +34,8 @@ namespace cgp
 	void normal_per_vertex(numarray<vec3> const& position, numarray<uint3> const& connectivity, numarray<vec3>& normals_to_fill, bool invert=false);
 	/** Compute automaticaly a per-vertex normal given a set of positions and their connectivity */
 	numarray<vec3> normal_per_vertex(numarray<vec3> const& position, numarray<uint3> const& connectivity, bool invert=false);
+
+    void normal_position_per_vertex(numarray<vec3> const& position, numarray<uint3> const& connectivity, numarray<vec3>& normals_to_fill, numarray<vec3>& colors, bool invert=false);
 
 	/** Check if the mesh looks coherent (correct indexing and size of buffer, no degenerate triangle, etc) */
 	bool mesh_check(mesh const& m);

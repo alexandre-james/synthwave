@@ -111,6 +111,80 @@ namespace cgp
 		return normals;
 	}
 
+	void normal_position_per_vertex(numarray<vec3> const& position, numarray<uint3> const& connectivity, numarray<vec3>& normals, numarray<vec3>& colors, bool invert)
+	{
+		size_t const N = position.size();
+		if(normals.size()!=N)
+			normals.resize(N);
+		else
+			normals.fill(vec3{0,0,0});
+
+		size_t const N_tri = connectivity.size();
+
+        printf("N_tri: %ld\n", N_tri);
+
+		for (size_t k_tri = 0; k_tri < N_tri; ++k_tri)
+		{
+			uint3 const& face = connectivity.at(k_tri);
+
+			//sanity check
+			assert_cgp_no_msg(get<0>(face)<N);
+			assert_cgp_no_msg(get<1>(face)<N);
+			assert_cgp_no_msg(get<2>(face)<N);
+
+			vec3 const& p0 = position.at(get<0>(face));
+			vec3 const& p1 = position.at(get<1>(face));
+			vec3 const& p2 = position.at(get<2>(face));
+
+            vec3 const& c = (p0 + p1 + p2) / 3;
+
+			// compute normal of the triangle
+			vec3 const p10 = p1-p0;
+			vec3 const p20 = p2-p0;
+
+			float const L10 = norm(p10);
+			float const L20 = norm(p20);
+
+            printf("c: (%f, %f, %f)\n", c.x, c.y, c.z);
+
+			// Add the normal direction to all vertices of this triangle
+			//  (only if the triangle is not degenerated: norm of edges>0, edges not aligned)
+			if (L10 > 1e-6f && L20 > 1e-6f)
+			{
+				vec3 const n = cross(p10/L10, p20/L20);
+				float const Ln = norm(n);
+
+				if (Ln > 1e-6f)
+				{
+					vec3 const n_unit = n/Ln;
+					for(unsigned int idx : face)
+                    {
+						normals.at(idx) = n_unit;
+                        colors.at(idx) = c;
+                    }
+				}
+
+
+			}
+		}
+
+        /*
+		// Normalize all normals
+		for (size_t k = 0; k < N; ++k)
+		{
+			vec3& n = normals.at(k);
+			float const L = norm(n);
+			if(L>1e-6f)
+				n /= L;
+		}*/
+        
+
+		// Invert normals if asked
+		if(invert) for(auto& n : normals) n = -n;
+
+			
+	}
+
 	bool mesh_check(mesh const& m)
 	{
 		bool ok = true;
@@ -221,6 +295,12 @@ namespace cgp
 	mesh& mesh::normal_update()
 	{
 		normal_per_vertex(position, connectivity, normal);
+		return *this;
+	}
+
+	mesh& mesh::normal_position_update()
+	{
+		normal_position_per_vertex(position, connectivity, normal, color);
 		return *this;
 	}
 

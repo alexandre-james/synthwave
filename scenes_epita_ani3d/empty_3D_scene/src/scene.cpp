@@ -20,14 +20,20 @@ void scene_structure::evolve_shape()
 void scene_structure::initialize()
 {
 	camera_control.initialize(inputs, window); // Give access to the inputs and window global state to the camera controler
-	camera_control.set_rotation_axis_y();
+	camera_control.set_rotation_axis_z();
 	camera_control.look_at({ 3.0f, 2.0f, 2.0f }, {0,0,0}, {0,0,1});
 
-	int N = 25;
+    environment.background_color = {0, 0, 0};
+
+	int N = 5;
 	shape = mesh_primitive_grid({ 0,0,0 }, { 1,0,0 }, { 1,1,0 }, { 0,1,0 }, N, N);
 	initial_position = shape.position;
-	shape_visual.initialize_data_on_gpu(shape);
-	shape_visual.material.color = { 0.6f, 0.6f, 0.9f };
+
+    opengl_shader_structure shader;
+    shader.load("shaders/single_color/vert.glsl", "shaders/single_color/frag.glsl");
+
+	shape_visual.initialize_data_on_gpu(shape, shader);
+	shape_visual.material.color = { 0.5f, 0.5f, 0.5f };
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
 
@@ -47,13 +53,13 @@ void scene_structure::display_frame()
 	timer.update();
 	
 	draw(shape_visual, environment);
-	if (gui.display_frame)
-    	draw_wireframe(shape_visual, environment, { 0,0,0 });
+	if (gui.display_wireframe)
+    	draw_wireframe(shape_visual, environment, { 0,0,255 });
 
 	evolve_shape();
 	shape_visual.vbo_position.update(shape.position);
 	// Recompute normals on the CPU (given the position and the connectivity currently in the mesh structure)
-	shape.normal_update();
+	shape.normal_position_update();
 	// Send updated normals on the GPU
 	shape_visual.vbo_normal.update(shape.normal);
 }
