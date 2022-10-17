@@ -9,7 +9,7 @@ using cgp::mesh_drawable;
 
 
 struct gui_parameters {
-	bool display_frame = true;
+	bool display_frame = false;
 	bool display_wireframe = false;
 };
 
@@ -35,8 +35,11 @@ struct scene_structure : cgp::scene_inputs_generic {
 	// ****************************** //
 
 	cgp::mesh shape;
+    cgp::mesh sun;
   	cgp::numarray<cgp::vec3> initial_position;
+  	cgp::numarray<cgp::vec3> sun_position;
   	cgp::mesh_drawable shape_visual;
+    cgp::mesh_drawable sun_visual;
 
 	// ****************************** //
 	// Functions
@@ -46,6 +49,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	void display_frame(); // The frame display to be called within the animation loop
 	void display_gui();   // The display of the GUI, also called within the animation loop
 	void evolve_shape(); // Compute the deformation of the surface
+    void evolve_sun(); // Compute the x pos of the sun
 
 	void mouse_move_event();
 	void mouse_click_event();

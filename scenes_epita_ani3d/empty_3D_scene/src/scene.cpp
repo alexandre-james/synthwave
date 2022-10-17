@@ -28,26 +28,45 @@ void scene_structure::evolve_shape()
     }
 }
 
+void scene_structure::evolve_sun()
+{
+    size_t const N = sun_position.size();
+    float x_pos = camera_control.camera_model.position().x;
+
+	for(int k=0; k<N; ++k)
+    {
+        sun.position[k].x = sun_position[k].x + x_pos;
+    } 
+}
+
 void scene_structure::initialize()
 {
 	camera_control.initialize(inputs, window); // Give access to the inputs and window global state to the camera controler
 	camera_control.set_rotation_axis_z();
-	camera_control.look_at({ 3.0f, 2.0f, 2.0f }, {0,0,0}, {0,0,1});
+	camera_control.look_at({ 0.0f, -0.5f, 1.0f }, {0,0,1}, {0,0,1});
 
     environment.background_color = {0, 0, 0};
 
 	int N = 101;
 	shape = mesh_primitive_grid({ -50,-50,0 }, { 50,-50,0 }, { 50,50,0 }, { -50,50,0 }, N, N);
+    sun = mesh_primitive_disc(10, { 0,100,10 }, { 0,-1,0 }, 24);
+
 	initial_position = shape.position;
+    sun_position = sun.position;
 
     opengl_shader_structure shader;
+    opengl_shader_structure single_color;
+
     shader.load("shaders/mesh/vert.glsl", "shaders/mesh/frag.glsl");
+    single_color.load("shaders/single_color/vert.glsl", "shaders/single_color/frag.glsl");
 
 	shape_visual.initialize_data_on_gpu(shape, shader);
-	shape_visual.material.color = { 0.5f, 0.5f, 0.5f };
+	shape_visual.material.color = { 0.2f, 0.4f, 1.0f };
+
+	sun_visual.initialize_data_on_gpu(sun, single_color);
+	sun_visual.material.color = { 1.0f, 0.7f, 0.0f };
+
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
-
-
 }
 
 
@@ -62,17 +81,27 @@ void scene_structure::display_frame()
 		draw(global_frame, environment);
 
 	timer.update();
+
+
 	
 	draw(shape_visual, environment);
-	if (gui.display_wireframe)
+    draw(sun_visual, environment);
+	if (gui.display_wireframe) {
     	draw_wireframe(shape_visual, environment, { 0,0,255 });
+        draw_wireframe(sun_visual, environment, { 0,0,255 });
+    }
 
 	evolve_shape();
+    evolve_sun();
+
 	shape_visual.vbo_position.update(shape.position);
+    sun_visual.vbo_position.update(sun.position);
 	// Recompute normals on the CPU (given the position and the connectivity currently in the mesh structure)
 	shape.normal_update();
+    sun.normal_update();
 	// Send updated normals on the GPU
 	shape_visual.vbo_normal.update(shape.normal);
+    sun_visual.vbo_normal.update(sun.normal);
 }
 
 void scene_structure::display_gui()
