@@ -126,6 +126,9 @@ void main()
 
     float dist = distance(camera_position, fragment.position);
 
+    float fog = min(dist / 60, 1);
+    float black = min(max(dist - 60, 0) / 60, 1);
+
     int sub = 1000;
 
     vec2 cond = vec2(int(abs(fragment.position.x) * sub) % sub, int(abs(fragment.position.y) * sub) % sub);
@@ -141,8 +144,15 @@ void main()
     float Ka = min(material.phong.ambient + neon_hue, 1);
     float Kd = min(material.phong.diffuse + neon_hue, 1);
     float Ks = material.phong.specular;
-    color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);	
+    color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);
+
+    vec3 fog_color;
+    // fogs
+    if (dist < 60)
+        fog_color = color_shading * (1 - fog) + fog * vec3(0.0, 1.0, 1.0);
+    else
+        fog_color = vec3(0.0, 1.0, 1.0) * (1 - black) + black * material.color * 0.5;
 
     // Output color, with the alpha component
-    FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
+    FragColor = vec4(fog_color, material.alpha * color_image_texture.a);
 }

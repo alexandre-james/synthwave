@@ -6,12 +6,13 @@ using namespace cgp;
 
 void scene_structure::evolve_shape()
 {	
-    size_t size = 101;
+    size_t x = 101;
+    size_t y = 1001;
 
     /* generate new perlin noise at beginning */
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < x; i++)
     {
-        for (size_t j = 0; j < size; j++)
+        for (size_t j = 0; j < y; j++)
         {
             float persistency = 0.01f;
             if (i < 46)
@@ -19,10 +20,12 @@ void scene_structure::evolve_shape()
             else if (i > 56)
                 persistency = 2.0f + 0.4f * (((i - 56) * 100.0f / 45.0f));
             
-            vec3 const& p0 = initial_position[i * size + j];
-            vec3& p        = shape.position[i * size + j];
-            float const dz = 0.3f * noise_perlin({ p0.x, p0.y, 0 }, 2, persistency, 0.3f) 
+            vec3 const& p0 = initial_position[i * y + j];
+            vec3& p        = shape.position[i * y + j];
+            float dz = 0.3f * noise_perlin({ p0.x, p0.y, 0 }, 2, persistency, 0.3f) 
                 + 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
+            
+            // dz = (noise_perlin({ abs(p0.x) / 5, 0 }, 2, 0.3, timer.t / 10) + noise_perlin({ p0.x / 10, p0.y / 10 }, 2, 0.3, 0))* (-3 * cos(p0.x / 10) + 3);
             p.z = dz;
         }
     }
@@ -31,11 +34,11 @@ void scene_structure::evolve_shape()
 void scene_structure::evolve_sun()
 {
     size_t const N = sun_position.size();
-    float x_pos = camera_control.camera_model.position().x;
+    vec3 pos = camera_control.camera_model.position();
 
 	for(int k=0; k<N; ++k)
     {
-        sun.position[k].x = sun_position[k].x + x_pos;
+        sun.position[k] = vec3(sun_position[k].x + pos.x, sun_position[k].y + pos.y, sun_position[k].z + pos.z);
     } 
 }
 
@@ -47,9 +50,8 @@ void scene_structure::initialize()
 
     environment.background_color = {0, 0, 0};
 
-	int N = 101;
-	shape = mesh_primitive_grid({ -50,-50,0 }, { 50,-50,0 }, { 50,50,0 }, { -50,50,0 }, N, N);
-    sun = mesh_primitive_disc(10, { 0,100,10 }, { 0,-1,0 }, 24);
+	shape = mesh_primitive_grid({ -50,0,0 }, { 50,0,0 }, { 50,1000,0 }, { -50,1000,0 }, 101, 1001);
+    sun = mesh_primitive_disc(10, { 0,50,5 }, { 0,-1,0 }, 40);
 
 	initial_position = shape.position;
     sun_position = sun.position;
@@ -85,11 +87,16 @@ void scene_structure::display_frame()
 
 	
 	draw(shape_visual, environment);
+    glDepthRange(0.999, 1.0);
     draw(sun_visual, environment);
+    glDepthRange(0.0, 1.0);
+
 	if (gui.display_wireframe) {
     	draw_wireframe(shape_visual, environment, { 0,0,255 });
         draw_wireframe(sun_visual, environment, { 0,0,255 });
     }
+
+    camera_control.camera_model.manipulator_translate_front(-0.2);
 
 	evolve_shape();
     evolve_sun();
