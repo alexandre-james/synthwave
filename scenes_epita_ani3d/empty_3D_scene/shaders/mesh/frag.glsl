@@ -62,6 +62,11 @@ struct material_structure
 
 uniform material_structure material;
 
+float hue(float cond, int sub) {
+    float per = cond / sub;
+    float absolute = abs(per - 0.5) * 2;
+    return pow(absolute, 10) / 1.5;
+}
 
 void main()
 {
@@ -69,6 +74,8 @@ void main()
 	mat3 O = transpose(mat3(view));                   // get the orientation matrix
 	vec3 last_col = vec3(view*vec4(0.0, 0.0, 0.0, 1.0)); // get the last column
 	vec3 camera_position = -O*last_col;
+
+    vec3 orientation = normalize(O * vec3(0.0, 0.0, 1.0));
 
 
 	// Renormalize normal
@@ -115,28 +122,26 @@ void main()
 	// Compute Shading
 	// *************************************** //
 
-	vec3 color_object;
+	vec3 color_shading;
 
     float dist = distance(camera_position, fragment.position);
-    int sub = int((1 / dist) * 300);
 
-    int x_cond = int(abs(fragment.position.x) * sub) % sub;
-    int y_cond = int(abs(fragment.position.y) * sub) % sub;
+    int sub = 1000;
 
-    if (x_cond == 0 || x_cond == sub - 1 || y_cond == 0 || y_cond == sub - 1) {
-        color_object = vec3(0, 1.0, 1.0);
-    }
-    else {
-	    // Compute the base color of the object based on: vertex color, uniform color, and texture
-        color_object = fragment.color * material.color * color_image_texture.rgb;
-    }
+    vec2 cond = vec2(int(abs(fragment.position.x) * sub) % sub, int(abs(fragment.position.y) * sub) % sub);
 
-	// Compute the final shaded color using Phong model
-	float Ka = material.phong.ambient;
-	float Kd = material.phong.diffuse;
-	float Ks = material.phong.specular;
-	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);	
+    vec2 hue_val = vec2(hue(cond.x, sub), hue(cond.y, sub));
 
+    float neon_hue = (max(hue_val.x, hue_val.y) + min(hue_val.x + hue_val.y, 1)) / 2;
+
+    // Compute the base color of the object based on: vertex color, uniform color, and texture
+    vec3 color_object = (1- neon_hue) * fragment.color * material.color * color_image_texture.rgb + neon_hue * vec3(0.0, 1.0, 1.0) + pow(neon_hue, 2) * vec3(1.0, 1.0, 1.0);
+
+    // Compute the final shaded color using Phong model
+    float Ka = min(material.phong.ambient + neon_hue, 1);
+    float Kd = min(material.phong.diffuse + neon_hue, 1);
+    float Ks = material.phong.specular;
+    color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);	
 
     // Output color, with the alpha component
     FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
