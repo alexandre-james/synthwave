@@ -44,14 +44,10 @@ uniform vec3 light = vec3(1.0, 1.0, 1.0); // position of the light
 
 void main()
 {
-    // Renormalize normal
-	vec3 N = normalize(fragment.normal);
-	// Unit direction toward the light
-	vec3 L = normalize(light-fragment.color);
-	// Diffuse coefficient
-	float diffuse_component = max(dot(N,L),0.0);
+    float top = 15;
+    float bottom = 5;
 
-    vec3 color_shading = diffuse_component * vec3(0.5, 1, 1);
+    float hue = fragment.position.z / (top - bottom);
 
-	FragColor = vec4(material.color, 1.0);
+	FragColor = vec4(hue * vec3(1, 1, 0) + (1 - hue) * vec3(1.0, 0.0, 1.0), 1.0);
 }
