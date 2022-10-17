@@ -6,25 +6,25 @@ using namespace cgp;
 
 void scene_structure::evolve_shape()
 {	
-    size_t const N = initial_position.size();
+    size_t size = 101;
 
-	for(float k=0.0f; k<4545.0f; ++k)
+    /* generate new perlin noise at beginning */
+    for (size_t i = 0; i < size; i++)
     {
-		float persistency = 2.0f + 0.4f * (100.0f - (k * 100.0f / 4545.0f));
-        vec3 const& p0 = initial_position[k];
-        vec3& p        = shape.position[k];
-		float const dz = 0.3f * noise_perlin({ p0.x + 0.2f * timer.t, p0.y, 0 }, 2, persistency, 0.3f) 
-			+ 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
-        p.z = dz;
-    }
-	for(float k=5662; k<N; ++k)
-    {
-		float persistency = 2.0f + 0.4f * (((k - 5662) * 100.0f / 4539.0f));
-        vec3 const& p0 = initial_position[k];
-        vec3& p        = shape.position[k];
-		float const dz = 0.3f * noise_perlin({ p0.x + 0.2f * timer.t, p0.y, 0 }, 2, persistency, 0.3f) 
-			+ 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
-        p.z = dz;
+        for (size_t j = 0; j < size; j++)
+        {
+            float persistency = 0.01f;
+            if (i < 46)
+                persistency = 2.0f + 0.4f * (100.0f - (i * 100.0f / 45.0f));
+            else if (i > 56)
+                persistency = 2.0f + 0.4f * (((i - 56) * 100.0f / 45.0f));
+            
+            vec3 const& p0 = initial_position[i * size + j];
+            vec3& p        = shape.position[i * size + j];
+            float const dz = 0.3f * noise_perlin({ p0.x, p0.y, 0 }, 2, persistency, 0.3f) 
+                + 0.015f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
+            p.z = dz;
+        }
     }
 }
 
