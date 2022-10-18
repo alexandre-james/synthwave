@@ -38,10 +38,15 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	std::vector<cgp::mesh> shape;
     cgp::mesh sun;
+    cgp::mesh gate;
+    cgp::mesh sky;
   	std::vector<cgp::numarray<cgp::vec3>> initial_position;
   	cgp::numarray<cgp::vec3> sun_position;
+  	cgp::numarray<cgp::vec3> sky_position;
   	std::vector<cgp::mesh_drawable> shape_visual;
     cgp::mesh_drawable sun_visual;
+    cgp::mesh_drawable gate_visual;
+    cgp::mesh_drawable sky_visual;
 
 	// ****************************** //
 	// Functions

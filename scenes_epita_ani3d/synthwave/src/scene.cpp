@@ -54,12 +54,16 @@ void scene_structure::teleport(int biome)
 
 void scene_structure::evolve_sun()
 {
-    size_t const N = sun_position.size();
     vec3 pos = camera_control.camera_model.position();
 
-	for(int k=0; k<N; ++k)
+	for(int k=0; k<sun_position.size(); ++k)
     {
         sun.position[k] = vec3(sun_position[k].x + pos.x, sun_position[k].y + pos.y, sun_position[k].z + pos.z);
+    } 
+
+	for(int k=0; k<sky_position.size(); ++k)
+    {
+        sky.position[k] = vec3(sky_position[k].x + pos.x, sky_position[k].y + pos.y, sky_position[k].z + pos.z);
     } 
 }
 
@@ -67,21 +71,24 @@ void scene_structure::initialize()
 {
 	camera_control.initialize(inputs, window); // Give access to the inputs and window global state to the camera controler
 	camera_control.set_rotation_axis_z();
-	camera_control.look_at({ 0.0f, -0.5f, 1.0f }, {0,0,1}, {0,0,1});
+	camera_control.look_at({ 0.0f, -60.0f, 1.0f }, {0,-50,1}, {0,0,1});
 
     environment.background_color = {0, 0, 0};
 
 	shape = {mesh_primitive_grid({ -50,0,0 }, { 50,0,0 }, { 50,1000,0 }, { -50,1000,0 }, 101, 1001),
             mesh_primitive_grid({ -50,1000,0 }, { 50,1000,0 }, { 50,2000,0 }, { -50,2000,0 }, 101, 1001)};
     sun = mesh_primitive_disc(10, { 0,50,5 }, { 0,-1,0 }, 40);
+    gate = mesh_primitive_quadrangle({-50,0,-50}, {50,0,-50}, {50,0,50}, {-50,0,50});
+    sky = mesh_primitive_quadrangle({-50,30,-10}, {50,30,-10}, {50,30,40}, {-50,30,40});
 
 	initial_position = {shape[0].position, shape[1].position};
     sun_position = sun.position;
+    sky_position = sky.position;
 
     opengl_shader_structure shader;
     opengl_shader_structure single_color;
 
-    shader.load("shaders/mesh/vert.glsl", "shaders/mesh/frag.glsl");
+    shader.load("shaders/sky/vert.glsl", "shaders/sky/frag.glsl");
     single_color.load("shaders/single_color/vert.glsl", "shaders/single_color/frag.glsl");
 
     mesh_drawable a;
@@ -91,12 +98,16 @@ void scene_structure::initialize()
     for (int biome=0; biome < shape.size(); biome++)
     {
         create_shape(biome);
-	    shape_visual[biome].initialize_data_on_gpu(shape[biome], shader);
+	    shape_visual[biome].initialize_data_on_gpu(shape[biome]);
 	    shape_visual[biome].material.color = { 0.2f, 0.4f, 1.0f };
     }
 
 	sun_visual.initialize_data_on_gpu(sun, single_color);
 	sun_visual.material.color = { 1.0f, 0.7f, 0.0f };
+
+    gate_visual.initialize_data_on_gpu(gate);
+    sky_visual.initialize_data_on_gpu(sky, shader);
+    sky_visual.texture.load_and_initialize_texture_2d_on_gpu("images/sky.jpg");
 
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 }
@@ -119,8 +130,11 @@ void scene_structure::display_frame()
     {
 	    draw(shape_visual[biome], environment);
     }
+    draw(gate_visual, environment);
 
     glDepthRange(0.999, 1.0);
+    draw(sky_visual, environment);
+    glDepthRange(0.98, 1.0);
     draw(sun_visual, environment);
     glDepthRange(0.0, 1.0);
 
@@ -140,10 +154,13 @@ void scene_structure::display_frame()
     evolve_sun();
 
     sun_visual.vbo_position.update(sun.position);
+    sky_visual.vbo_position.update(sky.position);
 	// Recompute normals on the CPU (given the position and the connectivity currently in the mesh structure)
     sun.normal_update();
+    sky.normal_update();
 	// Send updated normals on the GPU
     sun_visual.vbo_normal.update(sun.normal);
+    sky_visual.vbo_normal.update(sky.normal);
 }
 
 void scene_structure::display_gui()
