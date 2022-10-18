@@ -3,11 +3,10 @@
 
 using namespace cgp;
 
-void scene_structure::evolve_shape(int biome, bool is_creation)
+void scene_structure::create_shape(int biome)
 {	
     size_t x = 101;
     size_t y = 1001;
-    float cam = camera_control.camera_model.position().y;
 
     /* generate new perlin noise at beginning */
     for (size_t i = 0; i < x; i++)
@@ -15,29 +14,34 @@ void scene_structure::evolve_shape(int biome, bool is_creation)
         for (size_t j = 0; j < y; j++)
         {
             vec3& p = shape[biome].position[i * y + j];
+            vec2 p0 = {(float) i - 50, j};
+            float dz = 0;
 
-            if (is_creation || (p.y > cam - 10 && p.y < cam + 100)) {
-                vec2 p0 = {(float) i - 50, j};
-                float dz = 0;
-
-                if (biome == 0) {
-                    float persistency = 0.01f;
-                    if (i < 46)
-                        persistency = 2.0f + 0.4f * (100.0f - (i * 100.0f / 45.0f));
-                    else if (i > 56)
-                        persistency = 2.0f + 0.4f * (((i - 56) * 100.0f / 45.0f));
-                    
-                    dz = 0.2f * noise_perlin({ p0.x, p0.y, 0 }, 2, persistency, 0.3f) 
-                        + 0.01f * noise_perlin({ 4 * p0.x, 4 * p0.y, timer.t }, 2);
-                }
-                if (biome == 1) {
-                    dz = (noise_perlin({ std::abs(p0.x) / 5, 0 }, 2, 0.3, timer.t / 10) + noise_perlin({ p0.x / 10, p0.y / 10 }, 2, 0.3, 0)) * (-3 * cos(p0.x / 10) + 3);
-                }
-                p.z = dz * (-cos(p0.y / 53.0516) + 1);
+            if (biome == 0) {
+                float persistency = 0.01f;
+                if (i < 46)
+                    persistency = 2.0f + 0.4f * (100.0f - (i * 100.0f / 45.0f));
+                else if (i >= 55)
+                    persistency = 2.0f + 0.4f * (((i - 55) * 100.0f / 45.0f));
+                
+                dz = 0.2f * noise_perlin({ p0.x, p0.y, 0}, 2, persistency, 0.3f) 
+                    + 0.02f * noise_perlin({ 4 * p0.x, 4 * p0.y, 0}, 2);
             }
+
+            if (biome == 1) {
+                dz = (noise_perlin({ std::abs(p0.x) / 5, 0 }, 2, 0.3, 0) + noise_perlin({ p0.x / 10, p0.y / 10 }, 2, 0.3, 0)) * (-3 * cos(p0.x / 10) + 3);
+            }
+
+            p.z = dz * (-cos(p0.y / 53.0516) + 1);
         }
     }
+}
 
+void scene_structure::teleport(int biome)
+{
+    size_t x = 101;
+    size_t y = 1001;
+    float cam = camera_control.camera_model.position().y;
     /* infinite field with switch*/
     if (cam > 50 + 1000 * trigger && biome == (trigger + 1) % 2) {
         for(int k=0; k<x*y; ++k)
@@ -86,7 +90,7 @@ void scene_structure::initialize()
 
     for (int biome=0; biome < shape.size(); biome++)
     {
-        evolve_shape(biome, true);
+        create_shape(biome);
 	    shape_visual[biome].initialize_data_on_gpu(shape[biome], shader);
 	    shape_visual[biome].material.color = { 0.2f, 0.4f, 1.0f };
     }
@@ -123,11 +127,11 @@ void scene_structure::display_frame()
 	if (gui.display_wireframe) {
     }
 
-    camera_control.camera_model.manipulator_translate_front(-0.2);
+    camera_control.camera_model.manipulator_translate_front(-1);
 
     for (int biome=0; biome < shape.size(); biome++)
     {
-        evolve_shape(biome);
+        teleport(biome);
         shape_visual[biome].vbo_position.update(shape[biome].position);
         shape[biome].normal_update();
         shape_visual[biome].vbo_normal.update(shape[biome].normal);
