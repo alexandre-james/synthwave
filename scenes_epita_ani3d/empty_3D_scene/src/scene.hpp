@@ -29,16 +29,18 @@ struct scene_structure : cgp::scene_inputs_generic {
 	gui_parameters gui;                  // Standard GUI element storage
 	
 	cgp::timer_basic timer;
+
+    int trigger = 1;
 	
 	// ****************************** //
 	// Elements and shapes of the scene
 	// ****************************** //
 
-	cgp::mesh shape;
+	std::vector<cgp::mesh> shape;
     cgp::mesh sun;
-  	cgp::numarray<cgp::vec3> initial_position;
+  	std::vector<cgp::numarray<cgp::vec3>> initial_position;
   	cgp::numarray<cgp::vec3> sun_position;
-  	cgp::mesh_drawable shape_visual;
+  	std::vector<cgp::mesh_drawable> shape_visual;
     cgp::mesh_drawable sun_visual;
 
 	// ****************************** //
@@ -48,7 +50,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	void initialize();    // Standard initialization to be called before the animation loop
 	void display_frame(); // The frame display to be called within the animation loop
 	void display_gui();   // The display of the GUI, also called within the animation loop
-	void evolve_shape(); // Compute the deformation of the surface
+	void evolve_shape(int biome, bool is_creation=false); // Compute the deformation of the surface
     void evolve_sun(); // Compute the x pos of the sun
 
 	void mouse_move_event();
