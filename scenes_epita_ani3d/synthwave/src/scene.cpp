@@ -106,6 +106,7 @@ void scene_structure::initialize()
 	sun_visual.material.color = { 1.0f, 0.7f, 0.0f };
 
     gate_visual.initialize_data_on_gpu(gate);
+    gate_visual.texture.load_and_initialize_texture_2d_on_gpu("images/sky.jpg");
     sky_visual.initialize_data_on_gpu(sky, shader);
     sky_visual.texture.load_and_initialize_texture_2d_on_gpu("images/sky.jpg");
 
@@ -165,22 +166,22 @@ void scene_structure::display_frame()
 
 void scene_structure::display_gui()
 {
-	ImGui::Checkbox("Frame", &gui.display_frame);
-	ImGui::Checkbox("Wireframe", &gui.display_wireframe);
+	// ImGui::Checkbox("Frame", &gui.display_frame);
+	// ImGui::Checkbox("Wireframe", &gui.display_wireframe);
 }
 
 void scene_structure::mouse_move_event()
 {
-	if (!inputs.keyboard.shift)
-		camera_control.action_mouse_move(environment.camera_view);
+	/* if (!inputs.keyboard.shift)
+		camera_control.action_mouse_move(environment.camera_view); */
 }
 void scene_structure::mouse_click_event()
 {
-	camera_control.action_mouse_click(environment.camera_view);
+	// camera_control.action_mouse_click(environment.camera_view);
 }
 void scene_structure::keyboard_event()
 {
-	camera_control.action_keyboard(environment.camera_view);
+	// camera_control.action_keyboard(environment.camera_view);
 }
 void scene_structure::idle_frame()
 {
